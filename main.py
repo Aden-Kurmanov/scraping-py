@@ -21,6 +21,21 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36'
 }
 
+
+def get_salary_currency(string):
+    m = ''
+    c = ''
+
+    for s in string:
+        try:
+            s = int(s)
+            m += str(s)
+        except:
+            c += s
+
+    return int(m), c
+
+
 jobs_list = []
 
 for i in range(search_pages):
@@ -60,25 +75,20 @@ for i in range(search_pages):
             else:
                 is_from = len([x for x in salary_list if x == 'от']) > 0
                 if is_from:
-                    min_s_common = str(salary_list[len(salary_list) - 1])
-
-                    min_s = ''
-                    currency = ''
-
-                    for s in min_s_common:
-                        try:
-                            s = int(s)
-                            min_s += str(s)
-                        except:
-                            currency += s
-
-                    min_s = int(min_s)
+                    min_s, currency = get_salary_currency(str(salary_list[len(salary_list) - 1]))
 
                     obj_data['min_salary'] = min_s
                     obj_data['max_salary'] = None
                     obj_data['currency'] = currency
-                # else:
-                #     print(salary_list)
+                else:
+                    is_to = len([x for x in salary_list if x == 'до']) > 0
+                    if is_to:
+                        max_s, currency = get_salary_currency(str(salary_list[len(salary_list) - 1]))
+                        obj_data['min_salary'] = None
+                        obj_data['max_salary'] = max_s
+                        obj_data['currency'] = currency
+                    # else:
+                    #     print()
             # len_s = len(salary_block.findChildren(recursive=False))
             # if len_s == 0:
             #     min_s = salary_block.getText()
