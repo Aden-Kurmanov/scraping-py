@@ -1,3 +1,6 @@
+# TODO ссылка на второе задание первой дз
+# https://github.com/Aden-Kurmanov/scraping-py/blob/lesson-1/main-2.py
+
 from bs4 import BeautifulSoup as bs
 import requests
 from pprint import pprint as p
