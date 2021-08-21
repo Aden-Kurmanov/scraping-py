@@ -103,6 +103,6 @@ for i in range(search_pages):
 
 p(jobs_list)
 
-with open('jobs.json', 'w') as file:
-    json.dump(jobs_list, file)
+with open('jobs.json', 'w', encoding="utf-8") as file:
+    json.dump(jobs_list, file, ensure_ascii=False)
 
