@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup as bs
 import requests
 from pprint import pprint as p
+import json
 
 search_position = input('Введите должность: ')
 search_pages = input('На скольких страницах искать: ')
@@ -63,7 +64,7 @@ for i in range(search_pages):
         obj_data['link'] = url + a_block['href']
         loc_block = block.find('span', attrs={'class', 'f-test-text-company-item-location'})
         loc_children = loc_block.findChildren(recursive=False)
-        obj_data['address'] = loc_children[len(loc_children) - 1].getText()
+        obj_data['address'] = str(loc_children[len(loc_children) - 1].getText()).replace('\xa0', ' ')
         main_salary_block = link_salary_block.find('span', attrs={'class', 'f-test-text-company-item-salary'})
         if len(main_salary_block.findChildren(recursive=False)) == 1:
             obj_data['min_salary'] = 'По договоренности'
@@ -101,4 +102,7 @@ for i in range(search_pages):
         jobs_list.append(obj_data)
 
 p(jobs_list)
+
+with open('jobs.json', 'w') as file:
+    json.dump(jobs_list, file)
 
