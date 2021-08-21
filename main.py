@@ -39,7 +39,6 @@ def get_salary_currency(string):
 jobs_list = []
 
 for i in range(search_pages):
-    print('index: ', i)
     params = {
         'keywords': search_position
     }
@@ -50,7 +49,10 @@ for i in range(search_pages):
     response = requests.get(f"{url}/vacancy/search/", params=params, headers=headers)
 
     soup = bs(response.text, 'html.parser')
-    main = soup.find_all('div', attrs={'class': '_3zucV _3rq8C _1b_NL'})[1]
+    all_found = soup.find_all('div', attrs={'class': '_3zucV _3rq8C _1b_NL'})
+    if len(all_found) == 1:
+        break
+    main = all_found[1]
     blocks = main.find_all('div', attrs={'class', 'f-test-vacancy-item'})
 
     for block in blocks:
