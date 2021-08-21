@@ -59,8 +59,10 @@ for i in range(search_pages):
         a_block = link_salary_block.find('a', attrs={'class', 'icMQ_'})
         obj_data['name'] = a_block.getText()
         obj_data['link'] = url + a_block['href']
+        loc_block = block.find('span', attrs={'class', 'f-test-text-company-item-location'})
+        loc_children = loc_block.findChildren(recursive=False)
+        obj_data['address'] = loc_children[len(loc_children) - 1].getText()
         main_salary_block = link_salary_block.find('span', attrs={'class', 'f-test-text-company-item-salary'})
-        # print(obj_data['name'])
         if len(main_salary_block.findChildren(recursive=False)) == 1:
             obj_data['min_salary'] = 'По договоренности'
             obj_data['max_salary'] = None
@@ -94,7 +96,6 @@ for i in range(search_pages):
                         obj_data['max_salary'] = int(salary_list[0])
                         obj_data['currency'] = salary_list[len(salary_list) - 1]
 
-        print('')
         jobs_list.append(obj_data)
 
 p(jobs_list)
