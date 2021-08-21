@@ -87,8 +87,10 @@ for i in range(search_pages):
                         obj_data['min_salary'] = None
                         obj_data['max_salary'] = max_s
                         obj_data['currency'] = currency
-                    # else:
-                    #     print()
+                    else:
+                        obj_data['min_salary'] = int(salary_list[0])
+                        obj_data['max_salary'] = int(salary_list[0])
+                        obj_data['currency'] = salary_list[len(salary_list) - 1]
             # len_s = len(salary_block.findChildren(recursive=False))
             # if len_s == 0:
             #     min_s = salary_block.getText()
