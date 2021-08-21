@@ -50,15 +50,35 @@ for i in range(search_pages):
             obj_data['currency'] = None
         elif len(main_salary_block.findChildren(recursive=False)) == 2:
             salary_block = main_salary_block.find('span', attrs={'class', '_1h3Zg'})
-            salary_list = list(salary_block.children)
-            # print(list(salary_block.children))
+            salary_list = [str(x).replace('\xa0', '').replace(' ', '') for x in list(salary_block.children)]
             vilka = [x for x in salary_list if x.find('<span') != -1]
-            # print('vilka: ', vilka)
             if len(vilka) > 0:
-                v_list = [str(x).replace('\xa0', '') for x in salary_list if x.find('<span') == -1 and x.find(' ') == -1 and x != '\xa0']
+                v_list = [x for x in salary_list if x.find('<span') == -1]
                 obj_data['currency'] = v_list[len(v_list) - 1]
                 obj_data['min_salary'] = v_list[0]
                 obj_data['max_salary'] = v_list[1]
+            else:
+                is_from = len([x for x in salary_list if x == 'от']) > 0
+                if is_from:
+                    min_s_common = str(salary_list[len(salary_list) - 1])
+
+                    min_s = ''
+                    currency = ''
+
+                    for s in min_s_common:
+                        try:
+                            s = int(s)
+                            min_s += str(s)
+                        except:
+                            currency += s
+
+                    min_s = int(min_s)
+
+                    obj_data['min_salary'] = min_s
+                    obj_data['max_salary'] = None
+                    obj_data['currency'] = currency
+                # else:
+                #     print(salary_list)
             # len_s = len(salary_block.findChildren(recursive=False))
             # if len_s == 0:
             #     min_s = salary_block.getText()
