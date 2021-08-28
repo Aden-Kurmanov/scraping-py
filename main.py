@@ -1,13 +1,17 @@
-# TODO ссылка на второе задание первой дз
-# https://github.com/Aden-Kurmanov/scraping-py/blob/lesson-1/main-2.py
-
 from bs4 import BeautifulSoup as bs
-import requests
+from pymongo import MongoClient
 from pprint import pprint as p
-import json
+import requests
 
 search_position = input('Введите должность: ')
 search_pages = input('На скольких страницах искать: ')
+
+
+client = MongoClient("127.0.0.1", 27017)
+
+db = client['geekBrains_data_from_net']
+
+jobs = db.jobs
 
 is_not_num = True
 while is_not_num:
@@ -40,8 +44,6 @@ def get_salary_currency(string):
     return int(m), c
 
 
-jobs_list = []
-
 for i in range(search_pages):
     params = {
         'keywords': search_position
@@ -63,49 +65,64 @@ for i in range(search_pages):
         obj_data = {}
         link_salary_block = block.find('div', attrs={'class', 'jNMYr GPKTZ _1tH7S'})
         a_block = link_salary_block.find('a', attrs={'class', 'icMQ_'})
-        obj_data['name'] = a_block.getText()
         obj_data['link'] = url + a_block['href']
-        loc_block = block.find('span', attrs={'class', 'f-test-text-company-item-location'})
-        loc_children = loc_block.findChildren(recursive=False)
-        obj_data['address'] = str(loc_children[len(loc_children) - 1].getText()).replace('\xa0', ' ')
-        main_salary_block = link_salary_block.find('span', attrs={'class', 'f-test-text-company-item-salary'})
-        if len(main_salary_block.findChildren(recursive=False)) == 1:
-            obj_data['min_salary'] = 'По договоренности'
-            obj_data['max_salary'] = None
-            obj_data['currency'] = None
-        elif len(main_salary_block.findChildren(recursive=False)) == 2:
-            salary_block = main_salary_block.find('span', attrs={'class', '_1h3Zg'})
-            salary_list = [str(x).replace('\xa0', '').replace(' ', '') for x in list(salary_block.children)]
-            vilka = [x for x in salary_list if x.find('<span') != -1]
-            if len(vilka) > 0:
-                v_list = [x for x in salary_list if x.find('<span') == -1]
-                obj_data['currency'] = v_list[len(v_list) - 1]
-                obj_data['min_salary'] = v_list[0]
-                obj_data['max_salary'] = v_list[1]
-            else:
-                is_from = len([x for x in salary_list if x == 'от']) > 0
-                if is_from:
-                    min_s, currency = get_salary_currency(str(salary_list[len(salary_list) - 1]))
-
-                    obj_data['min_salary'] = min_s
-                    obj_data['max_salary'] = None
-                    obj_data['currency'] = currency
+        is_exist = False
+        for db_item in jobs.find({'link': obj_data['link']}):
+            is_exist = True
+            break
+        if not is_exist:
+            obj_data['name'] = a_block.getText()
+            loc_block = block.find('span', attrs={'class', 'f-test-text-company-item-location'})
+            loc_children = loc_block.findChildren(recursive=False)
+            obj_data['address'] = str(loc_children[len(loc_children) - 1].getText()).replace('\xa0', ' ')
+            main_salary_block = link_salary_block.find('span', attrs={'class', 'f-test-text-company-item-salary'})
+            if len(main_salary_block.findChildren(recursive=False)) == 1:
+                obj_data['min_salary'] = 'По договоренности'
+                obj_data['max_salary'] = None
+                obj_data['currency'] = None
+            elif len(main_salary_block.findChildren(recursive=False)) == 2:
+                salary_block = main_salary_block.find('span', attrs={'class', '_1h3Zg'})
+                salary_list = [str(x).replace('\xa0', '').replace(' ', '') for x in list(salary_block.children)]
+                vilka = [x for x in salary_list if x.find('<span') != -1]
+                if len(vilka) > 0:
+                    v_list = [x for x in salary_list if x.find('<span') == -1]
+                    obj_data['currency'] = v_list[len(v_list) - 1]
+                    obj_data['min_salary'] = int(v_list[0])
+                    obj_data['max_salary'] = int(v_list[1])
                 else:
-                    is_to = len([x for x in salary_list if x == 'до']) > 0
-                    if is_to:
-                        max_s, currency = get_salary_currency(str(salary_list[len(salary_list) - 1]))
-                        obj_data['min_salary'] = None
-                        obj_data['max_salary'] = max_s
+                    is_from = len([x for x in salary_list if x == 'от']) > 0
+                    if is_from:
+                        min_s, currency = get_salary_currency(str(salary_list[len(salary_list) - 1]))
+
+                        obj_data['min_salary'] = min_s
+                        obj_data['max_salary'] = None
                         obj_data['currency'] = currency
                     else:
-                        obj_data['min_salary'] = int(salary_list[0])
-                        obj_data['max_salary'] = int(salary_list[0])
-                        obj_data['currency'] = salary_list[len(salary_list) - 1]
+                        is_to = len([x for x in salary_list if x == 'до']) > 0
+                        if is_to:
+                            max_s, currency = get_salary_currency(str(salary_list[len(salary_list) - 1]))
+                            obj_data['min_salary'] = None
+                            obj_data['max_salary'] = max_s
+                            obj_data['currency'] = currency
+                        else:
+                            obj_data['min_salary'] = int(salary_list[0])
+                            obj_data['max_salary'] = int(salary_list[0])
+                            obj_data['currency'] = salary_list[len(salary_list) - 1]
 
-        jobs_list.append(obj_data)
+            jobs.insert_one(obj_data)
 
-p(jobs_list)
+salary = input('Введите минимальную заработную плату: ')
 
-with open('jobs.json', 'w', encoding="utf-8") as file:
-    json.dump(jobs_list, file, ensure_ascii=False)
+is_not_num = True
+while is_not_num:
+    try:
+        salary = int(salary)
+        is_not_num = False
+    except:
+        print()
+        print('Требуется ввести число!')
+        salary = input('Введите минимальную заработную плату: ')
+
+for found in jobs.find({'$or': [{'min_salary': {'$gte': salary}}, {'max_salary': {'$gte': salary}}]}):
+    p(found)
 
