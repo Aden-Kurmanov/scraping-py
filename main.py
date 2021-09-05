@@ -18,33 +18,79 @@ posts = db.posts
 
 chrome_options = Options()
 chrome_options.add_argument('start-maximized')
-
+prefs = {"profile.default_content_setting_values.notifications": 2}
+chrome_options.add_experimental_option("prefs", prefs)
 driver = webdriver.Chrome(executable_path="./chromedriver.exe", options=chrome_options)
 
-driver.get("https://mail.ru/")
+driver.get("https://www.mvideo.ru/")
+
+
+new_products = db.new_products
+time.sleep(2)
+
+geolocation_btn = WebDriverWait(driver, 10).until(EC.element_to_be_clickable((By.XPATH, "//a[contains(@class, 'geolocation__action-approve-city')]")))
+
+actions = ActionChains(driver)
+actions.move_by_offset(10, 10).click()
+actions.perform()
+
+news_section = driver.find_element_by_xpath("//h2[contains(text(), 'Новинки')]/../../../div[contains(@class, 'gallery-content')]//div[contains(@class, 'accessories-carousel-wrapper')]")
+# news_section = driver.find_element_by_xpath("//h2[contains(text(), 'Новинки')]")
+driver.execute_script("window.scrollTo(0, arguments[0].getBoundingClientRect().y)", news_section)
+print("news_section: ", news_section)
+goods_list = news_section.find_elements_by_class_name('gallery-list-item')
+
+print()
+
+
+
 
 #  Написать программу, которая собирает входящие письма из своего или тестового почтового ящика и
 #  сложить данные о письмах в базу данных (от кого, дата отправки, тема письма, текст письма полный)
 # Логин тестового ящика: study.ai_172@mail.ru
 # Пароль тестового ящика: NextPassword172???
 
-form = driver.find_element_by_xpath("//form[@data-testid='logged-out-form']")
-login = form.find_element_by_xpath("//input[contains(@class, 'email-input')]")
-login.send_keys('study.ai_172')
-btn_enter_pass = form.find_element_by_xpath("//button[@data-testid='enter-password']")
-btn_enter_pass.click()
-print()
+# form = driver.find_element_by_xpath("//form[@data-testid='logged-out-form']")
+# login = form.find_element_by_xpath(".//input[contains(@class, 'email-input')]")
+# login.send_keys('study.ai_172')
+# btn_enter_pass = form.find_element_by_xpath(".//button[@data-testid='enter-password']")
+# btn_enter_pass.click()
+# print()
+#
+# wait = WebDriverWait(form, 10)
+#
+# time.sleep(1)
+# password = form.find_element_by_xpath(".//input[@data-testid='password-input']")
+# password.send_keys('NextPassword172???')
+#
+# btn_to_mail = form.find_element_by_xpath(".//button[@data-testid='login-to-mail']")
+# btn_to_mail.click()
+#
+# content = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "scrollable")))
+# # content = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "dataset__items")))
+# old_height = driver.execute_script("return document.getElementsByClassName('scrollable')[0].scrollHeight")
+#
+# item_counter = 0
 
-wait = WebDriverWait(form, 10)
 
-time.sleep(1)
-password = form.find_element_by_xpath("//input[@data-testid='password-input']")
-password.send_keys('NextPassword172???')
+# print()
+# w = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, "//a[contains(@class, 'lls')]")))
+# print("w: ", w)
+# items = driver.find_elements_by_class_name("lls")
+# print(len(items))
+# print()
+# while True:
+#     items = content.find_elements_by_xpath("//a[contains(@class, 'lls')]")
 
-btn_to_mail = form.find_element_by_xpath("//button[@data-testid='login-to-mail']")
-btn_to_mail.click()
-
-
+    # driver.execute_script("window.scrollTo(0, document.getElementsByClassName('scrollable')[0].scrollHeight)")
+    # time.sleep(5)
+    # new_height = driver.execute_script("return document.getElementsByClassName('scrollable')[0].scrollHeight")
+    # print("new_height: ", new_height)
+    # print("old_height: ", old_height)
+    # if old_height == new_height:
+    #     break
+    #
+    # old_height = new_height
 
 
 
@@ -55,7 +101,7 @@ btn_to_mail.click()
 
 
 # driver.get("https://www.mvideo.ru/")
-
+#
 #
 # new_products = db.new_products
 #
