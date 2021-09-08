@@ -1,10 +1,19 @@
 from scrapy.pipelines.images import ImagesPipeline
 import scrapy
+from pymongo import MongoClient
+
 
 class HardwarestorePipeline:
+
+    def __init__(self):
+        client = MongoClient('127.0.0.1', 27017)
+        self.db = client['geekBrains_data_from_net']
+
     def process_item(self, item, spider):
-        print()
+        db = self.db[spider.name]
+        db.insert_one(item)
         return item
+
 
 class HardwarestoreImagesPipeline(ImagesPipeline):
     def get_media_requests(self, item, info):
