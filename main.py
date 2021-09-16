@@ -58,7 +58,7 @@ for i in range(search_pages):
     all_found = soup.find_all('div', attrs={'class': '_3zucV _3rq8C _1b_NL'})
     if len(all_found) == 1:
         break
-    main = all_found[1]
+    main = all_found[0]
     blocks = main.find_all('div', attrs={'class', 'f-test-vacancy-item'})
 
     for block in blocks:
